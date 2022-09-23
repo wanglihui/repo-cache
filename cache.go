@@ -1,4 +1,4 @@
-package gormcache
+package repocache
 
 import (
 	"context"
@@ -8,24 +8,24 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type ReopCacheInterface interface {
-	FindByID(context.Context, ID) (EntityModelInterface, error)
-	Update(context.Context, EntityModelInterface) (EntityModelInterface, error)
+type RepoCacheInterface[T EntityModelInterface] interface {
+	FindByID(context.Context, ID) (T, error)
+	Update(context.Context, T) (T, error)
 	Delete(context.Context, ID) error
-	Create(context.Context, EntityModelInterface) (EntityModelInterface, error)
-	Find(context.Context, Where, Order, Limit) (Paginate, error)
+	Create(context.Context, T) (T, error)
+	Find(context.Context, Where, Order, Limit) (Paginate[T], error)
 }
 
-type RepoCache struct {
-	repo    RepoInterface
+type RepoCache[T EntityModelInterface] struct {
+	repo    RepoInterface[T]
 	storage storage.StorageInterface
 }
 
-func (it *RepoCache) FindByID(ctx context.Context, id ID) (EntityModelInterface, error) {
+func (it *RepoCache[T]) FindByID(ctx context.Context, id ID) (T, error) {
 	bs, err := it.storage.Get(ctx, storage.Key(id))
-	var m EntityModelInterface
+	var m T
 	if err != nil && bs != nil {
-		m = m.Deserialize(bs)
+		m.Deserialize(bs)
 		return m, nil
 	}
 	m, err = it.repo.FindByID(ctx, id)
@@ -40,7 +40,7 @@ func (it *RepoCache) FindByID(ctx context.Context, id ID) (EntityModelInterface,
 	return m, err
 }
 
-func (it *RepoCache) Update(ctx context.Context, m EntityModelInterface) (EntityModelInterface, error) {
+func (it *RepoCache[T]) Update(ctx context.Context, m T) (T, error) {
 	m, err := it.repo.Update(ctx, m)
 	if err != nil {
 		return m, err
@@ -53,14 +53,14 @@ func (it *RepoCache) Update(ctx context.Context, m EntityModelInterface) (Entity
 	return m, err
 }
 
-func (it *RepoCache) Delete(ctx context.Context, id ID) error {
+func (it *RepoCache[T]) Delete(ctx context.Context, id ID) error {
 	if err := it.repo.Delete(ctx, id); err != nil {
 		return err
 	}
 	return it.storage.Delete(ctx, storage.Key(id))
 }
 
-func (it *RepoCache) Create(ctx context.Context, m EntityModelInterface) (EntityModelInterface, error) {
+func (it *RepoCache[T]) Create(ctx context.Context, m T) (T, error) {
 	m, err := it.repo.Create(ctx, m)
 	if err != nil {
 		return m, err
@@ -69,13 +69,13 @@ func (it *RepoCache) Create(ctx context.Context, m EntityModelInterface) (Entity
 	return m, err
 }
 
-func (it *RepoCache) Find(ctx context.Context, where Where, order Order, limit Limit) (Paginate, error) {
+func (it *RepoCache[T]) Find(ctx context.Context, where Where, order Order, limit Limit) (Paginate[T], error) {
 	paginate, err := it.repo.Find(ctx, where, order, limit)
-	var p Paginate
+	var p Paginate[T]
 	if err != nil {
 		return p, err
 	}
-	items := make([]EntityModelInterface, len(paginate.Items))
+	items := make([]T, len(paginate.Items))
 	var group errgroup.Group
 	for idx, id := range paginate.Items {
 		idx, id := idx, id
@@ -97,8 +97,8 @@ func (it *RepoCache) Find(ctx context.Context, where Where, order Order, limit L
 	return p, err
 }
 
-func NewGormCache(repo RepoInterface, storage storage.StorageInterface) ReopCacheInterface {
-	return &RepoCache{
+func NewRepoCache[T EntityModelInterface](repo RepoInterface[T], storage storage.StorageInterface) RepoCacheInterface[T] {
+	return &RepoCache[T]{
 		repo:    repo,
 		storage: storage,
 	}

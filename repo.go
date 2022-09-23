@@ -1,11 +1,11 @@
-package gormcache
+package repocache
 
 import "context"
 
 type EntityModelInterface interface {
 	GetID() ID
 	Serialize() []byte //对象序列化
-	Deserialize([]byte) EntityModelInterface
+	Deserialize([]byte) error
 }
 
 type Where map[string]string
@@ -20,16 +20,16 @@ type PaginateID struct {
 
 type ID string
 
-type RepoInterface interface {
-	FindByID(context.Context, ID) (EntityModelInterface, error)
-	Update(context.Context, EntityModelInterface) (EntityModelInterface, error)
+type RepoInterface[T EntityModelInterface] interface {
+	FindByID(context.Context, ID) (T, error)
+	Update(context.Context, T) (T, error)
 	Delete(context.Context, ID) error
-	Create(context.Context, EntityModelInterface) (EntityModelInterface, error)
+	Create(context.Context, T) (T, error)
 	Find(context.Context, Where, Order, Limit) (PaginateID, error)
 }
 
-type Paginate struct {
-	Items []EntityModelInterface `json:"items"`
-	Total int64                  `json:"total"`
-	Limit Limit                  `json:"limit"`
+type Paginate[T EntityModelInterface] struct {
+	Items []T   `json:"items"`
+	Total int64 `json:"total"`
+	Limit Limit `json:"limit"`
 }
