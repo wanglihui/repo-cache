@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-var storages map[string][]byte = make(map[string][]byte, 100)
+var storages = make(map[string][]byte, 100)
 
 func NewMemoryStorage(prefix string) StorageInterface {
 	return &MemoryStorage{
