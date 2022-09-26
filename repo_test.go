@@ -58,3 +58,6 @@ func (r *RepoImpl) Find(ctx context.Context, where repocache.Where, order repoca
 	p.Items = items
 	return p, nil
 }
+func (r *RepoImpl) FindOne(ctx context.Context, where repocache.Where, order repocache.Order) (repocache.ID, error) {
+	return repocache.ID("1"), nil
+}

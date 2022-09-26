@@ -26,6 +26,7 @@ type RepoInterface[T EntityModelInterface] interface {
 	Delete(context.Context, ID) error
 	Create(context.Context, T) (T, error)
 	Find(context.Context, Where, Order, Limit) (PaginateID, error)
+	FindOne(context.Context, Where, Order) (ID, error)
 }
 
 type Paginate[T EntityModelInterface] struct {
