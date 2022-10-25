@@ -5,7 +5,7 @@ import "context"
 type EntityModelInterface interface {
 	GetID() ID
 	Serialize() []byte //对象序列化
-	Deserialize([]byte) error
+	Deserialize([]byte, interface{}) error
 }
 
 type Where map[string]string

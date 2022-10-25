@@ -29,7 +29,7 @@ func (it *RepoCache[T]) FindByID(ctx context.Context, id ID) (T, error) {
 	bs, err := it.storage.Get(ctx, storage.Key(id))
 	var m T
 	if err == nil && bs != nil {
-		if err := m.Deserialize(bs); err != nil {
+		if err := m.Deserialize(bs, &m); err != nil {
 			fmt.Printf("err Deserialize %v", err)
 		} else {
 			return m, nil
