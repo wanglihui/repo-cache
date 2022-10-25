@@ -30,7 +30,7 @@ func (it *RedisStorage) Get(ctx context.Context, key Key) (Value, error) {
 
 func (it *RedisStorage) Set(ctx context.Context, key Key, val Value) error {
 	fullKey := it.getKey(key)
-	return it.client.Set(ctx, fullKey, val, time.Hour).Err()
+	return it.client.Set(ctx, fullKey, string(val), time.Hour).Err()
 }
 
 func (it *RedisStorage) Delete(ctx context.Context, key Key) error {
