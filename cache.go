@@ -29,10 +29,10 @@ func (it *RepoCache[T]) FindByID(ctx context.Context, id ID) (T, error) {
 	bs, err := it.storage.Get(ctx, storage.Key(id))
 	var m T
 	if err == nil && bs != nil {
-		if err := m.Deserialize(bs, &m); err != nil {
+		if m2, err := m.Deserialize(bs); err != nil {
 			fmt.Printf("err Deserialize %v", err)
 		} else {
-			return m, nil
+			return m2.(T), nil
 		}
 	}
 	m, err = it.repo.FindByID(ctx, id)

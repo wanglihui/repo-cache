@@ -21,9 +21,9 @@ func (e EntityTest) Serialize() []byte {
 	return bs
 }
 
-func (e EntityTest) Deserialize(bytes []byte, target interface{}) error {
-	if err := json.Unmarshal(bytes, target); err != nil {
-		return err
+func (e EntityTest) Deserialize(bytes []byte) (interface{}, error) {
+	if err := json.Unmarshal(bytes, &e); err != nil {
+		return nil, err
 	}
-	return nil
+	return e, nil
 }
