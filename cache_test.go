@@ -11,30 +11,30 @@ import (
 var (
 	repo = NewRepoImpl()
 	s    = storage.NewMemoryStorage("unit_test_repo")
-	it   = repocache.NewRepoCache[EntityTest](repo, s)
+	it   = repocache.NewRepoCache[*EntityTest](repo, s)
 )
 
 func TestRepoCache_Create(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		m   EntityTest
+		m   *EntityTest
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    EntityTest
+		want    *EntityTest
 		wantErr bool
 	}{
 		{
 			name: "test1",
 			args: args{
-				m: EntityTest{
+				m: &EntityTest{
 					ID:   "1",
 					Name: "test",
 					Age:  10,
 				},
 			},
-			want: EntityTest{
+			want: &EntityTest{
 				Name: "test",
 				Age:  10,
 			},
@@ -43,6 +43,7 @@ func TestRepoCache_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := it.Create(tt.args.ctx, tt.args.m)
+			defer it.Delete(tt.args.ctx, got.GetID())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RepoCache.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -62,7 +63,7 @@ func TestRepoCache_FindByID(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    EntityTest
+		want    *EntityTest
 		wantErr bool
 	}{
 		{
@@ -71,7 +72,7 @@ func TestRepoCache_FindByID(t *testing.T) {
 				ctx: context.Background(),
 				id:  "1",
 			},
-			want: EntityTest{
+			want: &EntityTest{
 				ID:  "1",
 				Age: 10,
 			},
@@ -80,6 +81,7 @@ func TestRepoCache_FindByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			it.Create(tt.args.ctx, tt.want)
 			got, err := it.FindByID(tt.args.ctx, tt.args.id)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindByID() error = %v, wantErr %v", err, tt.wantErr)
@@ -95,24 +97,24 @@ func TestRepoCache_FindByID(t *testing.T) {
 func TestRepoCache_Update(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		m   EntityTest
+		m   *EntityTest
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    EntityTest
+		want    *EntityTest
 		wantErr bool
 	}{
 		{
 			name: "TestRepoCache_Update",
 			args: args{
 				ctx: context.Background(),
-				m: EntityTest{
+				m: &EntityTest{
 					ID:  "1",
 					Age: 20,
 				},
 			},
-			want: EntityTest{
+			want: &EntityTest{
 				ID:  "1",
 				Age: 20,
 			},
@@ -143,7 +145,7 @@ func TestRepoCache_Find(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    repocache.Paginate[EntityTest]
+		want    repocache.Paginate[*EntityTest]
 		wantErr bool
 	}{
 		{
@@ -154,7 +156,7 @@ func TestRepoCache_Find(t *testing.T) {
 				order: "",
 				limit: 10,
 			},
-			want: repocache.Paginate[EntityTest]{
+			want: repocache.Paginate[*EntityTest]{
 				Limit: 10,
 			},
 			wantErr: false,

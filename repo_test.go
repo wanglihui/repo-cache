@@ -10,20 +10,20 @@ import (
 
 func NewRepoImpl() *RepoImpl {
 	return &RepoImpl{
-		db: make(map[string]EntityTest, 0),
+		db: make(map[string]*EntityTest, 0),
 	}
 }
 
 type RepoImpl struct {
-	db map[string]EntityTest
+	db map[string]*EntityTest
 }
 
-func (r *RepoImpl) FindByID(ctx context.Context, id repocache.ID) (EntityTest, error) {
+func (r *RepoImpl) FindByID(ctx context.Context, id repocache.ID) (*EntityTest, error) {
 	m := r.db[string(id)]
 	return m, nil
 }
 
-func (r *RepoImpl) Update(ctx context.Context, m EntityTest) (EntityTest, error) {
+func (r *RepoImpl) Update(ctx context.Context, m *EntityTest) (*EntityTest, error) {
 	id := m.GetID()
 	r.db[string(id)] = m
 	return m, nil
@@ -34,7 +34,7 @@ func (r *RepoImpl) Delete(ctx context.Context, id repocache.ID) error {
 	return nil
 }
 
-func (r *RepoImpl) Create(ctx context.Context, m EntityTest) (EntityTest, error) {
+func (r *RepoImpl) Create(ctx context.Context, m *EntityTest) (*EntityTest, error) {
 	if m.ID == "" {
 		id := fmt.Sprintf("%d", time.Now().Unix())
 		m.ID = repocache.ID(id)
