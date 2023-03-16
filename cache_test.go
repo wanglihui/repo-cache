@@ -152,10 +152,14 @@ func TestRepoCache_Find(t *testing.T) {
 		{
 			name: "find",
 			args: args{
-				ctx:   context.Background(),
-				where: map[string]string{},
-				order: "",
-				limit: 10,
+				ctx: context.Background(),
+				where: repocache.Where{
+					SQL:    "id = ? or id = ?",
+					Args:   []interface{}{1, 2},
+					Limit:  10,
+					Order:  "",
+					Offset: 0,
+				},
 			},
 			want: repocache.Paginate[EntityTest]{
 				Limit: 10,
@@ -165,7 +169,7 @@ func TestRepoCache_Find(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := it.Find(tt.args.ctx, tt.args.where, tt.args.order, tt.args.limit)
+			got, err := it.Find(tt.args.ctx, tt.args.where)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Find() error = %v, wantErr %v", err, tt.wantErr)
 				return

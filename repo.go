@@ -8,7 +8,13 @@ type EntityModelInterface interface {
 	Deserialize([]byte) (interface{}, error)
 }
 
-type Where map[string]string
+type Where struct {
+	SQL    string
+	Args   []interface{}
+	Limit  int64
+	Offset int64
+	Order  string
+}
 type Limit int64
 type Order string
 
@@ -25,8 +31,8 @@ type RepoInterface[T EntityModelInterface] interface {
 	Update(context.Context, T) (T, error)
 	Delete(context.Context, ID) error
 	Create(context.Context, T) (T, error)
-	Find(context.Context, Where, Order, Limit) (PaginateID, error)
-	FindOne(context.Context, Where, Order) (ID, error)
+	Find(context.Context, Where) (PaginateID, error)
+	FindOne(context.Context, Where) (ID, error)
 }
 
 type Paginate[T EntityModelInterface] struct {

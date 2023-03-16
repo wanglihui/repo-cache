@@ -43,11 +43,11 @@ func (r *RepoImpl) Create(ctx context.Context, m EntityTest) (EntityTest, error)
 	return m, nil
 }
 
-func (r *RepoImpl) Find(ctx context.Context, where repocache.Where, order repocache.Order, limit repocache.Limit) (repocache.PaginateID, error) {
+func (r *RepoImpl) Find(ctx context.Context, where repocache.Where) (repocache.PaginateID, error) {
 	var (
 		total = len(r.db)
 		p     = repocache.PaginateID{
-			Limit: limit,
+			Limit: repocache.Limit(where.Limit),
 			Total: int64(total),
 		}
 	)
@@ -58,6 +58,6 @@ func (r *RepoImpl) Find(ctx context.Context, where repocache.Where, order repoca
 	p.Items = items
 	return p, nil
 }
-func (r *RepoImpl) FindOne(ctx context.Context, where repocache.Where, order repocache.Order) (repocache.ID, error) {
+func (r *RepoImpl) FindOne(ctx context.Context, where repocache.Where) (repocache.ID, error) {
 	return repocache.ID("1"), nil
 }
