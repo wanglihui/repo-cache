@@ -7,10 +7,45 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func NewRedisStorage(prefix string, c *redis.Client) StorageInterface {
+type Config struct {
+	Prefix    string
+	Client    *redis.Client
+	CacheTime time.Duration
+}
+
+type Option func(*Config)
+
+func SetCacheTime(duration time.Duration) Option {
+	return func(c *Config) {
+		c.CacheTime = duration
+	}
+}
+
+func SetPrefix(prefix string) Option {
+	return func(c *Config) {
+		c.Prefix = prefix
+	}
+}
+
+func SetClient(client *redis.Client) Option {
+	return func(c *Config) {
+		c.Client = client
+	}
+}
+
+func NewRedisStorage(prefix string, c *redis.Client, opts ...Option) StorageInterface {
+	config := &Config{
+		Prefix:    prefix,
+		Client:    c,
+		CacheTime: time.Hour,
+	}
+	for _, f := range opts {
+		f(config)
+	}
 	return &RedisStorage{
-		prefix: prefix,
-		client: c,
+		prefix:    config.Prefix,
+		client:    config.Client,
+		cacheTime: config.CacheTime,
 	}
 }
 
@@ -30,7 +65,7 @@ func (it *RedisStorage) Get(ctx context.Context, key Key) (Value, error) {
 
 func (it *RedisStorage) Set(ctx context.Context, key Key, val Value) error {
 	fullKey := it.getKey(key)
-	return it.client.Set(ctx, fullKey, string(val), time.Hour).Err()
+	return it.client.Set(ctx, fullKey, string(val), it.cacheTime).Err()
 }
 
 func (it *RedisStorage) Delete(ctx context.Context, key Key) error {
@@ -42,6 +77,7 @@ func (it *RedisStorage) getKey(key Key) string {
 }
 
 type RedisStorage struct {
-	prefix string
-	client *redis.Client
+	prefix    string
+	client    *redis.Client
+	cacheTime time.Duration
 }
